@@ -12,6 +12,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*",
@@ -35,5 +39,6 @@ app.use(passport.session());
 
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/messages", messageRoutes);
+
 
 module.exports = app;
