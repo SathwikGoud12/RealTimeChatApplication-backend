@@ -70,6 +70,13 @@ const LoginUser = async (req, res) => {
 
     existingUser.refreshToken = refreshToken;
     await existingUser.save();
+    const isProduction = process.env.NODE_ENV === "production";
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       success: true,

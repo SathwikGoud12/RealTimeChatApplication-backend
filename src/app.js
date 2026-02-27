@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const cookie = require("cookie-parser");
 const session = require("express-session");
-
 const passport = require("./config/passport");
 const UserRoutes = require("./routes/user.routes.js");
 const messageRoutes = require("./routes/message.routes");
@@ -17,7 +16,6 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-// ✅ MULTIPLE ORIGIN FIX
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",")
   : [];
@@ -28,15 +26,14 @@ app.use(
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
-        return callback(null, origin); // ✅ CRITICAL FIX
+        callback(null, origin); // ✅ IMPORTANT FIX
       } else {
-        return callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
   })
 );
-
 app.use(cookie());
 
 app.use(
@@ -50,8 +47,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ ROUTES
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/messages", messageRoutes);
+
 
 module.exports = app;
