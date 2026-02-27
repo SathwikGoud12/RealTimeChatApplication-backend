@@ -16,16 +16,26 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : [];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, origin); // ✅ IMPORTANT FIX
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
-
 app.use(cookie());
 
-// 🔥 Session required for OAuth handshake
 app.use(
   session({
     secret: "oauthsecret",
