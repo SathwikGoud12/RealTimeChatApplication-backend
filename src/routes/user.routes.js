@@ -6,6 +6,7 @@ const {
   LoginUser,
   logOutUser,
   getUsers,
+  refreshAccessToken,
 } = require("../controllers/user.controller");
 
 const verifyAccessToken = require("../middlewares/auth.middleware");
@@ -20,6 +21,7 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", LoginUser);
 router.post("/logout", verifyAccessToken, logOutUser);
+router.post("/refresh", refreshAccessToken); // 🔄 Public — no access token needed
 router.get("/list", verifyAccessToken, getUsers);
 
 // 🔥 Google OAuth Route - Step 1

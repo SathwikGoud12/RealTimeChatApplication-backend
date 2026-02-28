@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -127,4 +128,40 @@ async function getUsers(req, res) {
   }
 }
 
-module.exports = { registerUser, LoginUser, logOutUser, getUsers };
+// 🔄 Refresh Access Token
+async function refreshAccessToken(req, res) {
+  try {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({ error: true, message: "No refresh token provided" });
+    }
+
+    // Verify the refresh token signature
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: true, message: "Invalid or expired refresh token" });
+    }
+
+    // Make sure it matches the token stored in DB (prevents reuse after logout)
+    const user = await User.findById(decoded.userId);
+    if (!user || user.refreshToken !== token) {
+      return res.status(401).json({ error: true, message: "Refresh token revoked" });
+    }
+
+    // Issue a fresh access token
+    const newAccessToken = generateAccessToken(user);
+
+    return res.status(200).json({
+      success: true,
+      accessToken: newAccessToken,
+    });
+  } catch (error) {
+    console.error("Error in refreshAccessToken:", error);
+    return res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+}
+
+module.exports = { registerUser, LoginUser, logOutUser, getUsers, refreshAccessToken };
